@@ -77,19 +77,25 @@
             <input onInput ="draw_color = this.value" type="color" class="color-picker">
             <input type="range" min="1" max="100" class="pen-range" onInput ="draw_width = this.value">
         </div>
+        <br> <br> 
+   
+
+        @model BacheloretteClient.Models.Bachelorette
+        @using (Html.BeginForm())
+        {      
+            @Html.LabelFor(model => model.Description)
+            @Html.TextBoxFor(model => model.Description)
+            @* @Html.Hidden("Base64", "<a style=id="b64StringID" href = test.html></a>") *@
+            @Html.Hidden("BacheloretteId", "22")
+            @Html.Hidden("Base64", "b64StringID")        
+            <p id="b64StringID"></p>
+            @* @Html.HiddenFor(m => m.Base64, new { Value = b64StringID }) *@
+            @* var text = myVar; *@           
+            <br> <br> <br>             
+            <input style="color:white; background: red;" type="submit" id="btnDownload"  class="btn btn-default" required="true" />
+        }
+        <p>@Html.ActionLink("Go to CReate page","Create", "Bachelorette")</p>
     </div>
-    @model BacheloretteClient.Models.Bachelorette
-    @using (Html.BeginForm())
-    {      
-        @Html.LabelFor(model => model.Description)
-        @Html.TextBoxFor(model => model.Description)        
-    }
-    @Html.Hidden("Base64", "tempBase64")
-    @Html.Hidden("BacheloretteId", "22")
-    <span id="b64StringID"></span>
-    <br> <br> <br>
-    <input style="color:white; background: red;" type="submit" id="btnDownload"  value="Submit" class="btn btn-default" required="true" />
-    <p>@Html.ActionLink("Go to CReate page","Create", "Bachelorette")</p>
 </body>
 
 <script type="text/javascript">
@@ -109,11 +115,6 @@
         draw_color = element.style.background;
     }
 
-    // myCanvas.addEventListener("touchstart", startPosition);
-    // myCanvas.addEventListener("touchmove", finishedPosition);
-    // myCanvas.addEventListener("mousedown", startPosition);
-    // myCanvas.addEventListener("mouseup", finishedPosition);
-    // myCanvas.addEventListener("mousemove", draw);
     myCanvas.addEventListener("touchstart", start, false);
     myCanvas.addEventListener("touchmove", draw, false);
     myCanvas.addEventListener("mousedown", start, false);
@@ -121,6 +122,15 @@
     myCanvas.addEventListener("touchend", stop, false);
     myCanvas.addEventListener("mouseup", stop, false);
     myCanvas.addEventListener("mouseout", stop, false);
+
+    $("form#deliveryForm").submit(function (event) {  //1a. Form where "delivery adddress" should be entered (for patrons who prefer delivery). Form submit will take user to Pizza Order Block
+        event.preventDefault();
+        var name = ($("#customerName").val()).toUpperCase();
+        newOrder.street = $("#inputAddress").val();
+        newOrder.city = $("#inputCity").val();
+        newOrder.state = $("#inputState").val();
+        newOrder.zip = $("#inputZip").val();
+    });
 
     function start(e) 
     {
@@ -155,12 +165,6 @@
         e.preventDefault();
     }
 
-    @* function readValue(e) 
-    {
-        document.getElementById("b64StringID").innerHTML = localStorage.getItem("b64String");        
-        e.preventDefault();
-    } *@
-
     const btnClear = document.querySelector("#btnClear");
     btnClear.addEventListener("click", function () 
     {  //listen for the click event and run this function
@@ -168,6 +172,36 @@
         context.clearRect(0, 0, myCanvas.width, myCanvas.height);     //feel free to alter- anything less than 900px does not erase the comeplete board
         context.fillRect(0, 0, myCanvas.width, myCanvas.height);  //if I dont do this canvas gets stuck
     });
+
+    var jsFucntionCalledFromC = function(){
+        localStorage.getItem("b64String");
+        console.log("from jsFucntionCalledFromC localStorage is "+  localStorage.getItem("b64String"));
+    };  
+
+    function localStorageToFile() {
+        @* console.log("Inside LocalStorageToFile"); *@
+        const csv = JSON.stringify(localStorage['autosave']);
+        const csvAsBlob = new Blob([csv], {type: 'text/plain'});
+        @* console.log("Inside LocalStorageToFile:207"); *@
+        const fileNameToSaveAs = 'local-storage.txt';
+        @* console.log("Inside LocalStorageToFile:209"); *@
+        const downloadLink = document.getElementById('btnDownload');
+        downloadLink.download = fileNameToSaveAs;
+         @* console.log("Inside LocalStorageToFile:212"); *@
+        if (window.URL !== null) {
+            // Chrome allows the link to be clicked without actually adding it to the DOM
+            downloadLink.href = window.URL.createObjectURL(csvAsBlob);
+            downloadLink.target = `_blank`;
+        } 
+        else {
+            downloadLink.href = window.URL.createObjectURL(csvAsBlob);
+            downloadLink.target = `_blank`;
+            downloadLink.style.display = 'none';
+            // add .download so works in Firefox desktop.
+            document.body.appendChild(downloadLink.download);
+        }
+        downloadLink.click();
+    }
 
     const btnDownload = document.querySelector("#btnDownload");
     btnDownload.addEventListener("click", function () 
@@ -183,10 +217,16 @@
             const dataURI = myCanvas.toDataURL("image/jpeg");     //converting the canvas content into a data URI and basically a data URI is a base64 encoded string representing the actual content of the canvas 
             console.log(dataURI);
             localStorage.setItem("b64String", dataURI);
-             document.getElementById("b64StringID").innerHTML = localStorage.getItem("b64String"); 
+            document.getElementById("b64StringID").innerHTML = dataURI;
+            @* localStorage.getItem("b64String"); *@
+            var test = "Hello";
+            document.getElementById("mytext").value = test;//Now you get the js variable inside your form element
+            console.log(mytext);
+             $('#myVar').val(dataURI);
+            @* jsFucntionCalledFromC(); *@
+            @* localStorageToFile();  *@       
         }
     });
-
 </script>
 
 </html> 
